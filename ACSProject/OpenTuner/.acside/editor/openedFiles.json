@@ -1,0 +1,20 @@
+{
+  "allFiles": [
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/OpenTuner/app/src/main/assets/index.html",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 36203,
+          "line": 791
+        },
+        "start": {
+          "column": 0,
+          "index": 36203,
+          "line": 791
+        }
+      }
+    }
+  ],
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/OpenTuner/app/src/main/assets/index.html"
+}

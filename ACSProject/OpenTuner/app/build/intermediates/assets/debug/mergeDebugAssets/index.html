@@ -2,7 +2,7 @@
 <html lang="en" class="h-full bg-slate-100 text-slate-900">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
   <title>OpenTuner</title>
 
   <style>
@@ -131,91 +131,87 @@
     .glow-flat { box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
     .glow-sharp { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
 
-    /* Pulse animation */
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: .5; }
     }
     .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-    /* Hide scrollbars */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Form Range Accent */
     input[type="range"] { accent-color: #0891b2; }
 
-    /* LANDSCAPE RESPONSIVE OVERRIDES */
-    @media (orientation: landscape) and (max-height: 520px) {
-      header {
-        padding-top: 0.35rem !important;
-        padding-bottom: 0.35rem !important;
-      }
-      main {
-        max-width: 100% !important;
-        padding: 0.5rem 1rem !important;
-      }
-      #mode-tuner {
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 1rem !important;
-      }
-      #tuner-card {
-        flex: 1 1 0% !important;
-        padding: 0.75rem 1.25rem !important;
-        gap: 0.25rem !important;
-        height: 100% !important;
-        justify-content: center !important;
-      }
-      #tuner-card .relative {
-        max-width: 180px !important;
-        height: 85px !important;
-        margin-top: 0 !important;
-      }
-      #tuner-card #dial-needle {
-        height: 65px !important;
-      }
-      #note-name {
-        font-size: 3rem !important;
-        line-height: 1 !important;
-      }
-      #mic-btn {
-        width: 160px !important;
-        height: max-content !important;
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-      }
-      #mode-tone {
-        flex-direction: row !important;
-        align-items: stretch !important;
-        justify-content: center !important;
-        gap: 1rem !important;
-      }
-      #mode-tone > div:first-child {
-        flex: 1 1 0% !important;
-        padding: 0.625rem 1rem !important;
-        gap: 0.375rem !important;
-        overflow-y: auto !important;
-      }
-      #mode-tone .grid-cols-4 {
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-      }
-      #mode-tone .note-btn {
-        padding: 0.35rem !important;
-        font-size: 0.8rem !important;
-      }
-      #mode-tone .wave-btn, #mode-tone .oct-btn {
-        padding-top: 0.25rem !important;
-        padding-bottom: 0.25rem !important;
-        font-size: 0.7rem !important;
-      }
-      #play-tone-btn {
-        width: 160px !important;
-        align-self: center !important;
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-      }
+    /* FORCED LANDSCAPE OVERRIDES (Triggered via JS class on body) */
+    body.is-landscape header {
+      padding-top: 0.35rem !important;
+      padding-bottom: 0.35rem !important;
+    }
+    body.is-landscape main {
+      max-width: 100% !important;
+      padding: 0.5rem 1rem !important;
+    }
+    body.is-landscape #mode-tuner {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 1rem !important;
+    }
+    body.is-landscape #tuner-card {
+      flex: 1 1 0% !important;
+      padding: 0.75rem 1.25rem !important;
+      gap: 0.25rem !important;
+      height: 100% !important;
+      justify-content: center !important;
+    }
+    body.is-landscape #tuner-card .relative {
+      max-width: 180px !important;
+      height: 85px !important;
+      margin-top: 0 !important;
+    }
+    body.is-landscape #tuner-card #dial-needle {
+      height: 65px !important;
+    }
+    body.is-landscape #note-name {
+      font-size: 3rem !important;
+      line-height: 1 !important;
+    }
+    body.is-landscape #mic-btn {
+      width: 160px !important;
+      height: max-content !important;
+      padding-top: 1rem !important;
+      padding-bottom: 1rem !important;
+    }
+    body.is-landscape #mode-tone {
+      flex-direction: row !important;
+      align-items: stretch !important;
+      justify-content: center !important;
+      gap: 1rem !important;
+    }
+    body.is-landscape #mode-tone > div:first-child {
+      flex: 1 1 0% !important;
+      padding: 0.625rem 1rem !important;
+      gap: 0.375rem !important;
+      overflow-y: auto !important;
+    }
+    body.is-landscape #mode-tone .grid-cols-4 {
+      grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    }
+    body.is-landscape #mode-tone .note-btn {
+      padding: 0.35rem !important;
+      font-size: 0.8rem !important;
+    }
+    body.is-landscape #mode-tone .wave-btn, 
+    body.is-landscape #mode-tone .oct-btn {
+      padding-top: 0.25rem !important;
+      padding-bottom: 0.25rem !important;
+      font-size: 0.7rem !important;
+    }
+    body.is-landscape #play-tone-btn {
+      width: 160px !important;
+      align-self: center !important;
+      padding-top: 1rem !important;
+      padding-bottom: 1rem !important;
     }
   </style>
 </head>
@@ -412,6 +408,21 @@
     let genSelectedWaveform = 'sine';
     let genVolume = 0.5;
 
+    // RELIABLE ORIENTATION CHECKER FOR ANDROID WEBVIEW
+    function checkOrientation() {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      if (isLandscape) {
+        document.body.classList.add('is-landscape');
+      } else {
+        document.body.classList.remove('is-landscape');
+      }
+    }
+
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkOrientation, 100);
+    });
+
     // PERSISTENCE STORAGE HELPERS (FOR APK WRAPPER & SCREEN ROTATION)
     function saveState() {
       const state = {
@@ -427,6 +438,7 @@
     }
 
     function restoreState() {
+      checkOrientation();
       const saved = localStorage.getItem('pocket_tuner_state');
       if (!saved) return;
       try {

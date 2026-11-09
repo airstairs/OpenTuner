@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         settings.mediaPlaybackRequiresUserGesture = false
         settings.allowFileAccess = true
         settings.allowContentAccess = true
+        settings.allowFileAccessFromFileURLs = true
+        settings.allowUniversalAccessFromFileURLs = true
 
         // Handle Web Chrome permissions (Microphone/Audio capture)
         webView.webChromeClient = object : WebChromeClient() {
@@ -55,17 +57,43 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        webView.webViewClient = WebViewClient()
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // Force a layout invalidate to fix CSS rendering drop on initial load
+                view?.invalidate()
+            }
+        }
 
         // Check Native Android Permissions on Launch
         if (!checkAudioPermission()) {
             requestAudioPermission()
         }
 
-        // Load local asset HTML file
-        if (savedInstanceState == null) {
+        // Load local asset HTML file or restore state
+        if (savedInstanceState != null) {
+            webView.restoreState(savedInstanceState)
+        } else {
             webView.loadUrl("file:///android_asset/index.html")
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Fixes black screen on reopening from Recents by forcing layout/surface refresh
+        webView.onResume()
+        webView.settings.javaScriptEnabled = true
+        webView.invalidate()
+    }
+
+    override fun onPause() {
+        webView.onPause()
+        super.onPause()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        webView.saveState(outState)
     }
 
     private fun checkAudioPermission(): Boolean {
@@ -109,7 +137,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // Prevents activity reload on rotation while allowing responsive CSS to handle layout changes
     }
 
     @Deprecated("Deprecated in Java")
