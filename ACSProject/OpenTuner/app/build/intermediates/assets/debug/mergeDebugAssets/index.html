@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-100 text-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OpenTuner</title>
+
+  <style>
+    /* CSS RESET & UTILITY ENGINE (Offline Tailwind Replacement) */
+    *, ::before, ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: #e2e8f0;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+    }
+    .font-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    /* Layout & Flex Utilities */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .flex-1 { flex: 1 1 0%; }
+    .flex-wrap { flex-wrap: wrap; }
+    .grid { display: grid; }
+    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .items-center { align-items: center; }
+    .items-end { align-items: flex-end; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-1-5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .hidden { display: none !important; }
+    .w-full { width: 100%; }
+    .h-full { height: 100%; }
+    .max-w-md { max-width: 28rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .p-1 { padding: 0.25rem; }
+    .p-1-5 { padding: 0.375rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-2-5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .p-5 { padding: 1.25rem; }
+    .p-6 { padding: 1.5rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-1-5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+
+    /* Colors & Styling */
+    .bg-slate-950 { background-color: #f1f5f9; }
+    .bg-slate-900 { background-color: #ffffff; }
+    .bg-slate-800 { background-color: #e2e8f0; }
+    .bg-cyan-500 { background-color: #0891b2; }
+    .bg-rose-500 { background-color: #e11d48; }
+    .bg-cyan-400 { background-color: #06b6d4; }
+    .text-slate-100 { color: #0f172a; }
+    .text-slate-200 { color: #1e293b; }
+    .text-slate-300 { color: #334155; }
+    .text-slate-400 { color: #64748b; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-600 { color: #94a3b8; }
+    .text-slate-700 { color: #cbd5e1; }
+    .text-slate-950 { color: #ffffff; }
+    .text-cyan-400 { color: #0891b2; }
+    .text-amber-400 { color: #d97706; }
+    .text-emerald-400 { color: #059669; }
+    .text-rose-400 { color: #dc2626; }
+
+    /* Borders & Radius */
+    .border { border-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-slate-800 { border-color: #e2e8f0; }
+    .border-slate-700 { border-color: #cbd5e1; }
+    .border-cyan-400 { border-color: #0891b2; }
+    .border-emerald-500-50 { border-color: rgba(16, 185, 129, 0.5); }
+    .border-amber-500-40 { border-color: rgba(245, 158, 11, 0.4); }
+    .border-rose-500-40 { border-color: rgba(239, 68, 68, 0.4); }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-3xl { border-radius: 1.5rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* Typography Details */
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+    .text-6xl { font-size: 3.75rem; line-height: 1; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .tracking-widest { letter-spacing: 0.1em; }
+    .tracking-tighter { letter-spacing: -0.05em; }
+
+    /* Interactive Elements & Animations */
+    button { cursor: pointer; outline: none; background: transparent; }
+    button:active { transform: scale(0.95); }
+    .transition-all { transition: all 0.2s ease; }
+    .transition-colors { transition: color 0.2s ease, background-color 0.2s ease; }
+    .dial-transition { transition: transform 0.1s cubic-bezier(0.1, 0.8, 0.3, 1); }
+    .origin-bottom { transform-origin: bottom center; }
+    .-translate-x-1-2 { transform: translateX(-50%); }
+
+    /* Custom Glow Effects */
+    .glow-in-tune { box-shadow: 0 0 25px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.1); }
+    .glow-flat { box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+    .glow-sharp { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+
+    /* Pulse animation */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    /* Hide scrollbars */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Form Range Accent */
+    input[type="range"] { accent-color: #0891b2; }
+
+    /* LANDSCAPE RESPONSIVE OVERRIDES */
+    @media (orientation: landscape) and (max-height: 520px) {
+      header {
+        padding-top: 0.35rem !important;
+        padding-bottom: 0.35rem !important;
+      }
+      main {
+        max-width: 100% !important;
+        padding: 0.5rem 1rem !important;
+      }
+      #mode-tuner {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 1rem !important;
+      }
+      #tuner-card {
+        flex: 1 1 0% !important;
+        padding: 0.75rem 1.25rem !important;
+        gap: 0.25rem !important;
+        height: 100% !important;
+        justify-content: center !important;
+      }
+      #tuner-card .relative {
+        max-width: 180px !important;
+        height: 85px !important;
+        margin-top: 0 !important;
+      }
+      #tuner-card #dial-needle {
+        height: 65px !important;
+      }
+      #note-name {
+        font-size: 3rem !important;
+        line-height: 1 !important;
+      }
+      #mic-btn {
+        width: 160px !important;
+        height: max-content !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+      #mode-tone {
+        flex-direction: row !important;
+        align-items: stretch !important;
+        justify-content: center !important;
+        gap: 1rem !important;
+      }
+      #mode-tone > div:first-child {
+        flex: 1 1 0% !important;
+        padding: 0.625rem 1rem !important;
+        gap: 0.375rem !important;
+        overflow-y: auto !important;
+      }
+      #mode-tone .grid-cols-4 {
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+      }
+      #mode-tone .note-btn {
+        padding: 0.35rem !important;
+        font-size: 0.8rem !important;
+      }
+      #mode-tone .wave-btn, #mode-tone .oct-btn {
+        padding-top: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+        font-size: 0.7rem !important;
+      }
+      #play-tone-btn {
+        width: 160px !important;
+        align-self: center !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans bg-slate-950 text-slate-100">
+
+  <!-- TOP HEADER / NAV BAR -->
+  <header class="w-full bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div style="width: 12px; height: 12px;" class="rounded-full bg-cyan-500 animate-pulse"></div>
+      <h1 class="font-mono text-lg font-bold tracking-wider text-slate-100 uppercase" style="margin:0;">Open<span class="text-cyan-400">Tuner</span></h1>
+    </div>
+
+    <!-- MODE SWITCH TABS -->
+    <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <button id="tab-tuner" onclick="switchMode('tuner')" class="px-4 py-1-5 rounded-lg text-xs font-semibold tracking-wider transition-all bg-cyan-500 text-slate-950">
+        LISTENER
+      </button>
+      <button id="tab-tone" onclick="switchMode('tone')" class="px-4 py-1-5 rounded-lg text-xs font-semibold tracking-wider transition-all text-slate-400">
+        GENERATOR
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 relative overflow-y-auto no-scrollbar flex flex-col items-center p-4 max-w-md w-full mx-auto justify-between">
+
+    <!-- MODE 1: TUNER / PITCH LISTENER SECTION -->
+    <section id="mode-tuner" class="w-full flex-1 flex flex-col justify-between items-center gap-4 py-2">
+
+      <!-- DIGITAL TUNING DISPLAY CARD -->
+      <div id="tuner-card" class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-between gap-4 transition-all relative">
+        
+        <!-- Status Indicator Bar -->
+        <div class="flex justify-between items-center w-full">
+          <span id="mic-status" class="text-xs font-mono text-slate-500 uppercase flex items-center gap-1-5">
+            <span id="mic-dot" class="rounded-full bg-slate-600" style="width: 8px; height: 8px;"></span> Mic Off
+          </span>
+        </div>
+
+        <!-- TUNING DIAL / GAUGE VISUALIZER -->
+        <div class="relative w-full flex justify-center items-end" style="max-width: 260px; height: 130px; margin-top: 0.5rem;">
+          <svg class="w-full h-full" viewBox="0 0 200 100" style="overflow: visible;">
+            <path d="M 20 90 A 80 80 0 0 1 180 90" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
+            <path d="M 20 90 A 80 80 0 0 1 80 17" fill="none" stroke="#d97706" stroke-width="4" opacity="0.6"/>
+            <path d="M 80 17 A 80 80 0 0 1 120 17" fill="none" stroke="#059669" stroke-width="8" opacity="0.9"/>
+            <path d="M 120 17 A 80 80 0 0 1 180 90" fill="none" stroke="#dc2626" stroke-width="4" opacity="0.6"/>
+            <line x1="100" y1="10" x2="100" y2="20" stroke="#059669" stroke-width="3" />
+            <line x1="60" y1="24" x2="66" y2="32" stroke="#94a3b8" stroke-width="2" />
+            <line x1="140" y1="24" x2="134" y2="32" stroke="#94a3b8" stroke-width="2" />
+            <line x1="26" y1="62" x2="34" y2="66" stroke="#94a3b8" stroke-width="2" />
+            <line x1="174" y1="62" x2="166" y2="66" stroke="#94a3b8" stroke-width="2" />
+          </svg>
+
+          <!-- Needle -->
+          <div id="dial-needle" class="absolute bg-cyan-500 rounded-full origin-bottom dial-transition" style="bottom: 6px; left: 50%; width: 4px; height: 96px; transform: translateX(-50%) rotate(0deg); box-shadow: 0 0 8px rgba(8, 145, 178, 0.4);">
+            <div class="bg-cyan-500 rounded-full absolute" style="width: 12px; height: 12px; top: -4px; left: 50%; transform: translateX(-50%);"></div>
+          </div>
+          <!-- Needle Hub -->
+          <div class="absolute rounded-full bg-slate-800 border-cyan-400" style="bottom: -8px; left: 50%; transform: translateX(-50%); width: 24px; height: 24px; border-width: 2px;"></div>
+        </div>
+
+        <!-- NOTE DISPLAY & CENTS -->
+        <div class="text-center" style="margin-top: 0.25rem; margin-bottom: 0.25rem;">
+          <div id="note-name" class="font-mono text-6xl font-bold tracking-tighter text-slate-700 transition-colors">
+            --
+          </div>
+          <div id="cents-text" class="font-mono text-sm tracking-wider font-semibold text-slate-500" style="margin-top: 0.25rem;">
+            0 CENTS
+          </div>
+        </div>
+
+        <!-- FREQUENCY READOUT -->
+        <div class="w-full flex justify-between items-center border-t border-slate-800 text-xs font-mono" style="padding-top: 0.75rem;">
+          <span class="text-slate-400">DETECTED FREQ:</span>
+          <span id="freq-display" class="text-cyan-400 text-base font-bold">0.0 Hz</span>
+        </div>
+
+      </div>
+
+      <!-- MIC TOGGLE BUTTON -->
+      <button id="mic-btn" onclick="toggleMicrophone()" class="w-full py-4 rounded-2xl bg-cyan-500 text-slate-950 font-mono font-bold text-base tracking-wider uppercase transition-all flex items-center justify-center gap-2">
+        <svg id="mic-icon" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+        </svg>
+        <span id="mic-btn-text">START TUNER</span>
+      </button>
+
+    </section>
+
+    <!-- MODE 2: TONE GENERATOR SECTION -->
+    <section id="mode-tone" class="w-full flex-1 flex flex-col justify-between items-center gap-4 py-2 hidden">
+
+      <!-- TONE CONTROL PANEL -->
+      <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col gap-4">
+        
+        <!-- TARGET TONE DISPLAY CARD -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex justify-between items-center">
+          <div>
+            <div class="font-mono text-slate-400 uppercase tracking-widest" style="font-size: 10px;">SELECTED NOTE</div>
+            <div id="gen-note-display" class="font-mono text-4xl font-bold text-cyan-400">A4</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="font-mono text-slate-400 uppercase tracking-widest" style="font-size: 10px;">FREQUENCY</div>
+            <div id="gen-freq-display" class="font-mono text-xl font-bold text-slate-200">440.00 Hz</div>
+          </div>
+        </div>
+
+        <!-- WAVEFORM SELECTOR -->
+        <div>
+          <label class="text-xs font-mono text-slate-400 uppercase tracking-wider" style="display: block; margin-bottom: 0.5rem;">WAVEFORM</label>
+          <div class="grid grid-cols-4 gap-1-5 bg-slate-950 p-1-5 rounded-xl border border-slate-800">
+            <button onclick="setWaveform('sine')" id="wave-sine" class="wave-btn py-2 text-xs font-mono rounded-lg bg-cyan-500 text-slate-950 font-bold transition-colors">SINE</button>
+            <button onclick="setWaveform('triangle')" id="wave-triangle" class="wave-btn py-2 text-xs font-mono rounded-lg text-slate-400 transition-colors">TRI</button>
+            <button onclick="setWaveform('square')" id="wave-square" class="wave-btn py-2 text-xs font-mono rounded-lg text-slate-400 transition-colors">SQR</button>
+            <button onclick="setWaveform('sawtooth')" id="wave-sawtooth" class="wave-btn py-2 text-xs font-mono rounded-lg text-slate-400 transition-colors">SAW</button>
+          </div>
+        </div>
+
+        <!-- OCTAVE SELECTOR -->
+        <div>
+          <label class="text-xs font-mono text-slate-400 uppercase tracking-wider" style="display: block; margin-bottom: 0.5rem;">OCTAVE</label>
+          <div class="flex justify-between bg-slate-950 p-1-5 rounded-xl border border-slate-800 gap-1">
+            <button onclick="setOctave(1)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold">1</button>
+            <button onclick="setOctave(2)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold">2</button>
+            <button onclick="setOctave(3)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold">3</button>
+            <button onclick="setOctave(4)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg bg-cyan-500 text-slate-950 font-bold">4</button>
+            <button onclick="setOctave(5)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold">5</button>
+            <button onclick="setOctave(6)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold">6</button>
+            <button onclick="setOctave(7)" class="oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold">7</button>
+          </div>
+        </div>
+
+        <!-- 12-NOTE KEYPAD GRID -->
+        <div>
+          <label class="text-xs font-mono text-slate-400 uppercase tracking-wider" style="display: block; margin-bottom: 0.5rem;">NOTE SELECTOR</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setNote('C')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-slate-200 transition-all">C</button>
+            <button onclick="setNote('C#')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-amber-400 transition-all">C#</button>
+            <button onclick="setNote('D')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-slate-200 transition-all">D</button>
+            <button onclick="setNote('D#')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-amber-400 transition-all">D#</button>
+            <button onclick="setNote('E')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-slate-200 transition-all">E</button>
+            <button onclick="setNote('F')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-slate-200 transition-all">F</button>
+            <button onclick="setNote('F#')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-amber-400 transition-all">F#</button>
+            <button onclick="setNote('G')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-slate-200 transition-all">G</button>
+            <button onclick="setNote('G#')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-amber-400 transition-all">G#</button>
+            <button onclick="setNote('A')" class="note-btn p-3 rounded-xl bg-slate-950 border border-cyan-400 text-cyan-400 font-mono font-bold text-sm transition-all">A</button>
+            <button onclick="setNote('A#')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-amber-400 transition-all">A#</button>
+            <button onclick="setNote('B')" class="note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm text-slate-200 transition-all">B</button>
+          </div>
+        </div>
+
+        <!-- VOLUME SLIDER -->
+        <div class="flex items-center gap-3 bg-slate-950 p-2-5 rounded-xl border border-slate-800">
+          <svg style="width: 16px; height: 16px;" class="text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.535 6.465a8 8 0 010 11.314M11 5L6 9H2v6h4l5 4V5z"/>
+          </svg>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" oninput="updateVolume(this.value)" class="w-full bg-slate-800 rounded-lg" style="height: 6px;">
+        </div>
+
+      </div>
+
+      <!-- PLAY/STOP SOUND TOGGLE BUTTON -->
+      <button id="play-tone-btn" onclick="toggleTonePlay()" class="w-full py-4 rounded-2xl bg-cyan-500 text-slate-950 font-mono font-bold text-base tracking-wider uppercase transition-all flex items-center justify-center gap-2">
+        <svg id="play-icon" style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <span id="play-btn-text">PLAY TONE</span>
+      </button>
+
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const A4_FREQ = 440;
+
+    let audioCtx = null;
+    let currentMode = 'tuner';
+
+    /* Tuner State */
+    let isMicActive = false;
+    let micStream = null;
+    let analyserNode = null;
+    let pitchAnimationId = null;
+
+    /* Tone Generator State */
+    let isPlayingTone = false;
+    let oscNode = null;
+    let gainNode = null;
+    let genSelectedNote = 'A';
+    let genSelectedOctave = 4;
+    let genSelectedWaveform = 'sine';
+    let genVolume = 0.5;
+
+    // PERSISTENCE STORAGE HELPERS (FOR APK WRAPPER & SCREEN ROTATION)
+    function saveState() {
+      const state = {
+        mode: currentMode,
+        isMicActive: isMicActive,
+        isPlayingTone: isPlayingTone,
+        genNote: genSelectedNote,
+        genOctave: genSelectedOctave,
+        genWaveform: genSelectedWaveform,
+        genVolume: document.getElementById('volume-slider').value
+      };
+      localStorage.setItem('pocket_tuner_state', JSON.stringify(state));
+    }
+
+    function restoreState() {
+      const saved = localStorage.getItem('pocket_tuner_state');
+      if (!saved) return;
+      try {
+        const state = JSON.parse(saved);
+        if (state.genNote) setNote(state.genNote);
+        if (state.genOctave) setOctave(state.genOctave);
+        if (state.genWaveform) setWaveform(state.genWaveform);
+        if (state.genVolume !== undefined) {
+          document.getElementById('volume-slider').value = state.genVolume;
+          updateVolume(state.genVolume);
+        }
+        if (state.mode) switchMode(state.mode);
+        if (state.isMicActive) startMicrophone();
+        if (state.isPlayingTone) startTone();
+      } catch(e) {
+        console.error("Failed to restore state", e);
+      }
+    }
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function switchMode(mode) {
+      currentMode = mode;
+      const tunerSec = document.getElementById('mode-tuner');
+      const toneSec = document.getElementById('mode-tone');
+      const tabTuner = document.getElementById('tab-tuner');
+      const tabTone = document.getElementById('tab-tone');
+
+      if (mode === 'tuner') {
+        tunerSec.classList.remove('hidden');
+        toneSec.classList.add('hidden');
+        tabTuner.className = "px-4 py-1-5 rounded-lg text-xs font-semibold tracking-wider transition-all bg-cyan-500 text-slate-950";
+        tabTone.className = "px-4 py-1-5 rounded-lg text-xs font-semibold tracking-wider transition-all text-slate-400";
+        if (isPlayingTone) stopTone();
+      } else {
+        toneSec.classList.remove('hidden');
+        tunerSec.classList.add('hidden');
+        tabTone.className = "px-4 py-1-5 rounded-lg text-xs font-semibold tracking-wider transition-all bg-cyan-500 text-slate-950";
+        tabTuner.className = "px-4 py-1-5 rounded-lg text-xs font-semibold tracking-wider transition-all text-slate-400";
+        if (isMicActive) stopMicrophone();
+      }
+      saveState();
+    }
+
+    async function toggleMicrophone() {
+      if (isMicActive) {
+        stopMicrophone();
+      } else {
+        await startMicrophone();
+      }
+      saveState();
+    }
+
+    async function startMicrophone() {
+      try {
+        const ctx = getAudioContext();
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+
+        const micSource = ctx.createMediaStreamSource(micStream);
+        analyserNode = ctx.createAnalyser();
+        analyserNode.fftSize = 2048;
+        micSource.connect(analyserNode);
+
+        isMicActive = true;
+
+        document.getElementById('mic-btn').className = "w-full py-4 rounded-2xl bg-rose-500 text-slate-950 font-mono font-bold text-base tracking-wider uppercase transition-all flex items-center justify-center gap-2";
+        document.getElementById('mic-btn-text').innerText = "STOP TUNER";
+        document.getElementById('mic-status').innerHTML = `<span id="mic-dot" class="rounded-full bg-emerald-400 animate-pulse" style="width: 8px; height: 8px;"></span> Listening...`;
+        
+        updatePitch();
+        saveState();
+      } catch (err) {
+        console.error("Microphone Access Error:", err);
+        alert("Could not access microphone. Please enable audio permissions.");
+      }
+    }
+
+    function stopMicrophone() {
+      if (pitchAnimationId) cancelAnimationFrame(pitchAnimationId);
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
+      isMicActive = false;
+
+      document.getElementById('mic-btn').className = "w-full py-4 rounded-2xl bg-cyan-500 text-slate-950 font-mono font-bold text-base tracking-wider uppercase transition-all flex items-center justify-center gap-2";
+      document.getElementById('mic-btn-text').innerText = "START TUNER";
+      document.getElementById('mic-status').innerHTML = `<span id="mic-dot" class="rounded-full bg-slate-600" style="width: 8px; height: 8px;"></span> Mic Off`;
+      
+      resetTunerDisplay();
+      saveState();
+    }
+
+    function resetTunerDisplay() {
+      document.getElementById('note-name').innerText = "--";
+      document.getElementById('note-name').className = "font-mono text-6xl font-bold tracking-tighter text-slate-700 transition-colors";
+      document.getElementById('freq-display').innerText = "0.0 Hz";
+      document.getElementById('cents-text').innerText = "0 CENTS";
+      document.getElementById('cents-text').className = "font-mono text-sm tracking-wider font-semibold text-slate-500";
+      document.getElementById('cents-text').style.marginTop = "0.25rem";
+      document.getElementById('dial-needle').style.transform = `translateX(-50%) rotate(0deg)`;
+      document.getElementById('tuner-card').className = "w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-between gap-4 transition-all relative";
+    }
+
+    function autoCorrelate(buf, sampleRate) {
+      const SIZE = buf.length;
+      let rms = 0;
+      for (let i = 0; i < SIZE; i++) {
+        const val = buf[i];
+        rms += val * val;
+      }
+      rms = Math.sqrt(rms / SIZE);
+
+      if (rms < 0.01) return -1;
+
+      let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+      for (let i = 0; i < SIZE / 2; i++) {
+        if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+      }
+      for (let i = 1; i < SIZE / 2; i++) {
+        if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+      }
+
+      buf = buf.slice(r1, r2);
+      const c = new Float32Array(buf.length);
+
+      for (let i = 0; i < buf.length; i++) {
+        for (let j = 0; j < buf.length - i; j++) {
+          c[i] = c[i] + buf[j] * buf[j + i];
+        }
+      }
+
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+
+      let maxval = -1, maxpos = -1;
+      for (let i = d; i < buf.length; i++) {
+        if (c[i] > maxval) {
+          maxval = c[i];
+          maxpos = i;
+        }
+      }
+
+      let T0 = maxpos;
+      const x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+      const a = (x1 + x3 - 2 * x2) / 2;
+      const b = (x3 - x1) / 2;
+      if (a) T0 = T0 - b / (2 * a);
+
+      return sampleRate / T0;
+    }
+
+    function updatePitch() {
+      if (!isMicActive || !analyserNode) return;
+
+      const buffer = new Float32Array(analyserNode.fftSize);
+      analyserNode.getFloatTimeDomainData(buffer);
+
+      const pitch = autoCorrelate(buffer, audioCtx.sampleRate);
+
+      if (pitch !== -1 && pitch >= 30 && pitch <= 4000) {
+        let noteNum = 12 * (Math.log(pitch / A4_FREQ) / Math.log(2)) + 69;
+        let roundedNoteNum = Math.round(noteNum);
+        
+        let targetFreq = A4_FREQ * Math.pow(2, (roundedNoteNum - 69) / 12);
+        let cents = Math.floor(1200 * Math.log2(pitch / targetFreq));
+
+        const noteName = NOTE_NAMES[roundedNoteNum % 12];
+        const octave = Math.floor(roundedNoteNum / 12) - 1;
+
+        document.getElementById('freq-display').innerText = `${pitch.toFixed(1)} Hz`;
+        document.getElementById('note-name').innerText = `${noteName}${octave}`;
+        
+        const clampedCents = Math.max(-50, Math.min(50, cents));
+        const rotationDeg = (clampedCents / 50) * 60;
+        document.getElementById('dial-needle').style.transform = `translateX(-50%) rotate(${rotationDeg}deg)`;
+
+        const centsText = cents > 0 ? `+${cents} CENTS` : `${cents} CENTS`;
+        document.getElementById('cents-text').innerText = centsText;
+
+        const tunerCard = document.getElementById('tuner-card');
+        const noteDisplay = document.getElementById('note-name');
+        const centsDisplay = document.getElementById('cents-text');
+
+        if (Math.abs(cents) <= 3) {
+          tunerCard.className = "w-full bg-slate-900 border border-emerald-500-50 rounded-3xl p-6 flex flex-col items-center justify-between gap-4 transition-all relative glow-in-tune";
+          noteDisplay.className = "font-mono text-6xl font-bold tracking-tighter text-emerald-400 transition-colors";
+          centsDisplay.className = "font-mono text-sm tracking-wider font-semibold text-emerald-400";
+          centsDisplay.style.marginTop = "0.25rem";
+        } else if (cents < -3) {
+          tunerCard.className = "w-full bg-slate-900 border border-amber-500-40 rounded-3xl p-6 flex flex-col items-center justify-between gap-4 transition-all relative glow-flat";
+          noteDisplay.className = "font-mono text-6xl font-bold tracking-tighter text-amber-400 transition-colors";
+          centsDisplay.className = "font-mono text-sm tracking-wider font-semibold text-amber-400";
+          centsDisplay.style.marginTop = "0.25rem";
+        } else {
+          tunerCard.className = "w-full bg-slate-900 border border-rose-500-40 rounded-3xl p-6 flex flex-col items-center justify-between gap-4 transition-all relative glow-sharp";
+          noteDisplay.className = "font-mono text-6xl font-bold tracking-tighter text-rose-400 transition-colors";
+          centsDisplay.className = "font-mono text-sm tracking-wider font-semibold text-rose-400";
+          centsDisplay.style.marginTop = "0.25rem";
+        }
+      }
+
+      pitchAnimationId = requestAnimationFrame(updatePitch);
+    }
+
+    function getFrequencyForNote(note, octave) {
+      const noteIndex = NOTE_NAMES.indexOf(note);
+      const midiNumber = (octave + 1) * 12 + noteIndex;
+      return A4_FREQ * Math.pow(2, (midiNumber - 69) / 12);
+    }
+
+    function updateGeneratorDisplay() {
+      const freq = getFrequencyForNote(genSelectedNote, genSelectedOctave);
+      document.getElementById('gen-note-display').innerText = `${genSelectedNote}${genSelectedOctave}`;
+      document.getElementById('gen-freq-display').innerText = `${freq.toFixed(2)} Hz`;
+
+      if (isPlayingTone && oscNode) {
+        oscNode.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      }
+      saveState();
+    }
+
+    function setWaveform(type) {
+      genSelectedWaveform = type;
+      document.querySelectorAll('.wave-btn').forEach(btn => {
+        btn.className = "wave-btn py-2 text-xs font-mono rounded-lg text-slate-400 transition-colors";
+      });
+      document.getElementById(`wave-${type}`).className = "wave-btn py-2 text-xs font-mono rounded-lg bg-cyan-500 text-slate-950 font-bold transition-colors";
+
+      if (isPlayingTone && oscNode) {
+        oscNode.type = genSelectedWaveform;
+      }
+      saveState();
+    }
+
+    function setOctave(oct) {
+      genSelectedOctave = oct;
+      const octBtns = document.querySelectorAll('.oct-btn');
+      octBtns.forEach((btn, idx) => {
+        if (idx + 1 === oct) {
+          btn.className = "oct-btn flex-1 py-2 text-xs font-mono rounded-lg bg-cyan-500 text-slate-950 font-bold";
+        } else {
+          btn.className = "oct-btn flex-1 py-2 text-xs font-mono rounded-lg text-slate-400 font-bold";
+        }
+      });
+      updateGeneratorDisplay();
+    }
+
+    function setNote(note) {
+      genSelectedNote = note;
+      const noteBtns = document.querySelectorAll('.note-btn');
+      noteBtns.forEach(btn => {
+        if (btn.innerText === note) {
+          btn.className = 'note-btn p-3 rounded-xl bg-slate-950 border border-cyan-400 text-cyan-400 font-mono font-bold text-sm transition-all';
+        } else {
+          const isSharp = btn.innerText.includes('#');
+          btn.className = `note-btn p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono font-bold text-sm ${isSharp ? 'text-amber-400' : 'text-slate-200'} transition-all`;
+        }
+      });
+      updateGeneratorDisplay();
+    }
+
+    function toggleTonePlay() {
+      if (isPlayingTone) {
+        stopTone();
+      } else {
+        startTone();
+      }
+      saveState();
+    }
+
+    function startTone() {
+      const ctx = getAudioContext();
+      
+      oscNode = ctx.createOscillator();
+      gainNode = ctx.createGain();
+
+      const freq = getFrequencyForNote(genSelectedNote, genSelectedOctave);
+      const vol = parseFloat(document.getElementById('volume-slider').value);
+
+      oscNode.type = genSelectedWaveform;
+      oscNode.frequency.setValueAtTime(freq, ctx.currentTime);
+
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.05);
+
+      oscNode.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscNode.start();
+      isPlayingTone = true;
+
+      document.getElementById('play-tone-btn').className = "w-full py-4 rounded-2xl bg-rose-500 text-slate-950 font-mono font-bold text-base tracking-wider uppercase transition-all flex items-center justify-center gap-2";
+      document.getElementById('play-btn-text').innerText = "STOP TONE";
+      document.getElementById('play-icon').innerHTML = `<path d="M6 6h12v12H6z"/>`;
+      saveState();
+    }
+
+    function stopTone() {
+      if (!isPlayingTone || !gainNode) return;
+
+      gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.05);
+      setTimeout(() => {
+        if (oscNode) {
+          oscNode.stop();
+          oscNode.disconnect();
+          oscNode = null;
+        }
+        isPlayingTone = false;
+        saveState();
+      }, 50);
+
+      document.getElementById('play-tone-btn').className = "w-full py-4 rounded-2xl bg-cyan-500 text-slate-950 font-mono font-bold text-base tracking-wider uppercase transition-all flex items-center justify-center gap-2";
+      document.getElementById('play-btn-text').innerText = "PLAY TONE";
+      document.getElementById('play-icon').innerHTML = `<path d="M8 5v14l11-7z"/>`;
+    }
+
+    function updateVolume(val) {
+      if (isPlayingTone && gainNode && audioCtx) {
+        gainNode.gain.setValueAtTime(parseFloat(val), audioCtx.currentTime);
+      }
+      saveState();
+    }
+
+    // PERSISTENCE LISTENERS FOR ROTATION & WEVIEW REBUILD
+    window.addEventListener('beforeunload', saveState);
+    window.addEventListener('pagehide', saveState);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveState();
+    });
+
+    window.addEventListener('DOMContentLoaded', restoreState);
+  </script>
+</body>
+</html>
